@@ -1,7 +1,7 @@
 package com.assessment.financial.controller;
 
 import com.assessment.financial.constant.ApiPath;
-import com.assessment.financial.constant.ResponseCode;
+import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.dto.TransactionDto;
 import com.assessment.financial.service.TransactionService;
