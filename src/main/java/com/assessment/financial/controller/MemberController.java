@@ -2,7 +2,7 @@ package com.assessment.financial.controller;
 
 import com.assessment.financial.constant.ApiPath;
 import com.assessment.financial.constant.ResponseCode;
-import com.assessment.financial.dto.MemberDto;
+import com.assessment.financial.dto.MemberAndTransactionDto;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ public class MemberController {
   private MemberService memberService;
 
   @PostMapping
-  public Mono<ResponseDto> insertOneMember (@RequestBody MemberDto memberDto) {
-    return memberService.insertOneMember(memberDto)
+  public Mono<ResponseDto> insertOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto) {
+    return memberService.insertOneMember(memberAndTransactionDto)
         .map(
             data -> ResponseDto.buildResponse()
                 .status_code(ResponseCode.SUCCESS.getCode())
@@ -60,8 +60,8 @@ public class MemberController {
   }
 
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
-  public Mono<ResponseDto> updateOneMember (@RequestBody MemberDto memberDto, @PathVariable Long id) {
-    return memberService.updateOneMember(id, memberDto)
+  public Mono<ResponseDto> updateOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto, @PathVariable Long id) {
+    return memberService.updateOneMember(id, memberAndTransactionDto)
         .map(
             data -> ResponseDto.buildResponse()
                 .status_code(ResponseCode.SUCCESS.getCode())
