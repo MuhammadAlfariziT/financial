@@ -5,6 +5,7 @@ import com.assessment.financial.constant.ResponseCode;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.dto.TransactionDto;
 import com.assessment.financial.service.TransactionService;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -37,13 +39,32 @@ public class TransactionController {
   }
 
   @GetMapping
-  public Mono<ResponseDto> getAllTransaction () {
-    return transactionService.getAllTransaction()
-        .collectList()
-        .map(data -> ResponseDto.buildResponse()
-            .status_code(ResponseCode.SUCCESS.getCode())
-            .message(ResponseCode.SUCCESS.getMessage())
-            .data(data)
+  public Mono<ResponseDto> getAllTransaction (@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
+    if (!Objects.isNull(startDate) && !Objects.isNull(endDate)) {
+      return transactionService.getTransactionHistoryRangeDate(startDate, endDate)
+          .collectList()
+          .map(data -> ResponseDto.buildResponse()
+              .status_code(ResponseCode.SUCCESS.getCode())
+              .message(ResponseCode.SUCCESS.getMessage())
+              .data(data)
+              .build()
+          );
+    } else if (Objects.isNull(startDate) && Objects.isNull(endDate)){
+      return transactionService.getAllTransactionHistory()
+          .collectList()
+          .map(data -> ResponseDto.buildResponse()
+              .status_code(ResponseCode.SUCCESS.getCode())
+              .message(ResponseCode.SUCCESS.getMessage())
+              .data(data)
+              .build()
+          );
+    }
+
+    return Mono.just(ResponseDto
+        .buildResponse()
+            .status_code(ResponseCode.BAD_RESPONSE.getCode())
+            .message(ResponseCode.BAD_RESPONSE.getMessage())
+            .data(null)
             .build()
         );
   }

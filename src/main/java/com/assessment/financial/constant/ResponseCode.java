@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum ResponseCode {
 
+  BAD_RESPONSE(400, "Bad Response"),
   SUCCESS(200, "Success");
 
   private int code;
