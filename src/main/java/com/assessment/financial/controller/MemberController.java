@@ -47,6 +47,18 @@ public class MemberController {
         );
   }
 
+  @GetMapping(ApiPath.APPEND_PARAMS_ID)
+  public Mono<ResponseDto> getMemberById (@PathVariable Long id) {
+    return memberService.getMemberById(id)
+        .map(
+            memberDto -> ResponseDto.buildResponse()
+                .status_code(ResponseCode.SUCCESS.getCode())
+                .message(ResponseCode.SUCCESS.getMessage())
+                .data(memberDto)
+                .build()
+        );
+  }
+
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> updateOneMember (@RequestBody MemberDto memberDto, @PathVariable Long id) {
     return memberService.updateOneMember(id, memberDto)

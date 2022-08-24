@@ -4,10 +4,12 @@ import com.assessment.financial.dao.TransactionDao;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class MemberDto {
 
   private Long id;

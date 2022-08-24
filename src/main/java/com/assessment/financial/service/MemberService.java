@@ -27,6 +27,10 @@ public class MemberService {
         .map(MemberMapper::memberDaoToDto);
   }
 
+  public Mono<Optional<MemberDto>> getMemberById (Long id) {
+    return Mono.just(memberRepository.findById(id).map(MemberMapper::memberDaoToDto));
+  }
+
   public Mono<Optional<MemberDto>> updateOneMember (Long id, MemberDto memberDto) {
     return Mono.just(memberRepository.findById(id)
         .flatMap(memberDaoOptional -> Optional.ofNullable(memberDaoOptional)
