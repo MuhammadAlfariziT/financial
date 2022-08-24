@@ -13,6 +13,7 @@ public class MemberMapper {
         .address(memberDao.getAddress())
         .balance(memberDao.getBalance())
         .birth_date(memberDao.getBirth_date().toString())
+        .transaction_history(memberDao.getTransaction_history())
         .build();
   }
 

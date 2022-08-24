@@ -1,4 +1,4 @@
-package com.assessment.financial.constant.field;
+package com.assessment.financial.constant.datasource;
 
 public class TransactionField {
 

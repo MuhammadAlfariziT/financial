@@ -1,4 +1,4 @@
-package com.assessment.financial.constant;
+package com.assessment.financial.constant.datasource;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
