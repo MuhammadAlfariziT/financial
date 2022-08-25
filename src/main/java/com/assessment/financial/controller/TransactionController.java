@@ -1,10 +1,10 @@
 package com.assessment.financial.controller;
 
 import com.assessment.financial.constant.ApiPath;
-import com.assessment.financial.constant.TransactionType;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.dto.TransactionDto;
+import com.assessment.financial.helper.RequestValidatorHelper;
 import com.assessment.financial.service.TransactionService;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,26 +29,8 @@ public class TransactionController {
 
   @PostMapping
   public Mono<ResponseDto> insertOneTransaction (@RequestBody TransactionDto transactionDto) {
-    if (! transactionDto.getTransaction_type().equals(TransactionType.DEPOSIT) &&
-        ! transactionDto.getTransaction_type().equals(TransactionType.LOAN) &&
-        ! transactionDto.getTransaction_type().equals(TransactionType.PAID_OFF) &&
-        ! transactionDto.getTransaction_type().equals(TransactionType.WITHDRAW)) {
-      return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.TRANSACTION_TYPE_NOT_RECOGIZED)
-              .build()
-      );
-    }
-
-    if (Objects.isNull(transactionDto.getTransaction_type()) ||
-        Objects.isNull(transactionDto.getTransaction_date()) ||
-        Objects.isNull(transactionDto.getAmount()) ||
-        Objects.isNull(transactionDto.getMember_id())) {
-      return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.ALL_FIELD_REQUIRED)
-              .build()
-      );
+    if (!Objects.isNull(RequestValidatorHelper.isValidRequestTransaction(transactionDto))) {
+      return RequestValidatorHelper.isValidRequestTransaction(transactionDto);
     }
 
     try {
@@ -104,17 +86,8 @@ public class TransactionController {
 
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> updateOneTransaction (@RequestBody TransactionDto transactionDto, @PathVariable Long id) {
-    if (
-        ! transactionDto.getTransaction_type().equals(TransactionType.DEPOSIT) &&
-            ! transactionDto.getTransaction_type().equals(TransactionType.LOAN) &&
-            ! transactionDto.getTransaction_type().equals(TransactionType.PAID_OFF) &&
-            ! transactionDto.getTransaction_type().equals(TransactionType.WITHDRAW)
-    ) {
-      return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.TRANSACTION_TYPE_NOT_RECOGIZED)
-              .build()
-      );
+    if (!Objects.isNull(RequestValidatorHelper.isValidRequestTransaction(transactionDto))) {
+      return RequestValidatorHelper.isValidRequestTransaction(transactionDto);
     }
 
     try {

@@ -4,6 +4,7 @@ import com.assessment.financial.constant.ApiPath;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.MemberAndTransactionDto;
 import com.assessment.financial.dto.ResponseDto;
+import com.assessment.financial.helper.RequestValidatorHelper;
 import com.assessment.financial.service.MemberService;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,23 +27,9 @@ public class MemberController {
 
   @PostMapping
   public Mono<ResponseDto> insertOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto) {
-    if (memberAndTransactionDto.getName().length() <= 3) {
-      return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.NAME_LEN_MIN_3_CHARACTER)
-              .build()
-      );
-    }
 
-    if (Objects.isNull(memberAndTransactionDto.getName()) ||
-        Objects.isNull(memberAndTransactionDto.getAddress()) ||
-        Objects.isNull(memberAndTransactionDto.getBalance()) ||
-        Objects.isNull(memberAndTransactionDto.getBirth_date())) {
-      return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.ALL_FIELD_REQUIRED)
-              .build()
-      );
+    if (!Objects.isNull(RequestValidatorHelper.isValidRequestMember(memberAndTransactionDto))) {
+      return RequestValidatorHelper.isValidRequestMember(memberAndTransactionDto);
     }
 
     try {
@@ -102,6 +89,10 @@ public class MemberController {
 
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> updateOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto, @PathVariable Long id) {
+    if (!Objects.isNull(RequestValidatorHelper.isValidRequestMember(memberAndTransactionDto))) {
+      return RequestValidatorHelper.isValidRequestMember(memberAndTransactionDto);
+    }
+
     try {
       return memberService.updateOneMember(id, memberAndTransactionDto)
           .map(

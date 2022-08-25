@@ -17,4 +17,6 @@ public class Message {
   public static final String ALL_FIELD_REQUIRED = "All field is Required!";
   public static final String TRANSACTION_TYPE_NOT_RECOGNIZED = "Transaction Type Not Recognized. Valid value : (Deposit, Withdraw, Loan, Paid Off)";
   public static final String BALANCE_UNDER_0 = "Sufficient Balance!";
+  public static final String INVALID_DATE_FORMAT = "Invalid Date Format! please (yyyy-MM-dd)";
+  public static final String FUTURE_DATE_INPUT = "The date entered has not occurred";
 }

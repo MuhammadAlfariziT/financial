@@ -1,6 +1,7 @@
 package com.assessment.financial.service;
 
 import com.assessment.financial.constant.response.ResponseCode;
+import com.assessment.financial.dao.TransactionDao;
 import com.assessment.financial.dto.TransactionDto;
 import com.assessment.financial.dto.TransactionHistoryDto;
 import com.assessment.financial.exception.BusinessLogicException;
@@ -28,9 +29,11 @@ public class TransactionService {
 
   public Mono<TransactionDto> insertOneTransaction (TransactionDto transactionDto) {
     return Mono.just(transactionDto)
-        .map(TransactionMapper::transactionDtoToDao)
-        .map(transactionRepository::save)
-        .map(TransactionMapper::transactionDaoToDto)
+        .map(transactionDtoEntity -> {
+          TransactionDao transactionDao = TransactionMapper.transactionDtoToDao(transactionDtoEntity);
+          transactionRepository.save(transactionDao);
+          return TransactionMapper.transactionDaoToDto(transactionDao);
+        })
         .doOnError(throwable -> {
           log.error(throwable.toString());
           throw new BusinessLogicException(ResponseCode.FAILED_CREATE_DATA);
