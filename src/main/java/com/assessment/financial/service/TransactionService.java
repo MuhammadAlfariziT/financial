@@ -11,16 +11,15 @@ import com.assessment.financial.mapper.TransactionMapper;
 import com.assessment.financial.repository.MemberRepository;
 import com.assessment.financial.repository.TransactionRepository;
 import java.sql.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-@Slf4j
 public class TransactionService {
 
   @Autowired
@@ -35,7 +34,6 @@ public class TransactionService {
   public Mono<TransactionDto> insertOneTransaction (TransactionDto transactionDto) {
     return Mono.just(transactionDto)
         .map(transactionDtoEntity -> {
-          log.info("Sampai sini");
           memberRepository.findById(transactionDto.getMember_id())
               .flatMap(memberDaoOptional -> Optional.ofNullable(memberDaoOptional)
                   .map(memberDao -> {
@@ -49,16 +47,12 @@ public class TransactionService {
 
                     memberDao.setBalance(future_balance);
 
-                    return memberService.updateOneMember(transactionDto.getMember_id(), MemberMapper.memberDaoToMemberAndTransactionDto(memberDao));
+                    return memberService.updateMember(transactionDto.getMember_id(), MemberMapper.memberDaoToMemberAndTransactionDto(memberDao));
                   })
               );
           TransactionDao transactionDao = TransactionMapper.transactionDtoToDao(transactionDtoEntity);
           transactionRepository.save(transactionDao);
           return TransactionMapper.transactionDaoToDto(transactionDao);
-        })
-        .doOnError(throwable -> {
-          log.error(throwable.toString());
-          throw new BusinessLogicException(ResponseCode.FAILED_CREATE_DATA);
         });
   }
 
@@ -77,8 +71,7 @@ public class TransactionService {
         )
         .flatMap(Flux::fromIterable)
         .doOnError(throwable -> {
-          log.error(throwable.toString());
-          throw new BusinessLogicException(ResponseCode.FAILED_GET_DATA);
+          if (Objects.isNull(throwable)) throw new BusinessLogicException(ResponseCode.FAILED_GET_DATA);
         });
   }
 
@@ -103,14 +96,12 @@ public class TransactionService {
         )
         .flatMap(Flux::fromIterable)
         .doOnError(throwable -> {
-          log.error(throwable.toString());
           throw new BusinessLogicException(ResponseCode.FAILED_GET_DATA);
         });
 
   }
 
   public Mono<Optional<TransactionDto>> updateOneTransaction (Long id, TransactionDto transactionDto) {
-    try {
       return Mono.just(transactionRepository.findById(id)
           .flatMap(transactionDaoOptional -> Optional.ofNullable(transactionDaoOptional)
               .map(transactionDao -> {
@@ -123,13 +114,8 @@ public class TransactionService {
               })
               .map(TransactionMapper::transactionDaoToDto)
           )
-      ).doOnError(throwable -> {
-        log.error(throwable.toString());
-        throw new BusinessLogicException(ResponseCode.DATA_NOT_EXIST);
-      });
-    } catch (Exception e) {
-      throw new BusinessLogicException(ResponseCode.FAILED_UPDATE_DATA);
-    }
+      );
+
   }
 
   public Mono<Void> deleteOneTransaction (Long id) {

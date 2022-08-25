@@ -47,4 +47,14 @@ public class MemberMapper {
         .birth_date(memberAndTransactionDto.getBirth_date().toString())
         .build();
   }
+
+  public static MemberDao memberDtoToDao (MemberDto memberDto) {
+    return MemberDao.buildMemberDao()
+        .id(memberDto.getId())
+        .name(memberDto.getName())
+        .balance(memberDto.getBalance())
+        .birth_date(Date.valueOf(memberDto.getBirth_date()))
+        .address(memberDto.getAddress())
+        .build();
+  }
 }

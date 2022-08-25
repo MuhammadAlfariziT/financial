@@ -4,9 +4,11 @@ import com.assessment.financial.constant.ApiPath;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.dto.TransactionDto;
+import com.assessment.financial.exception.BusinessLogicException;
 import com.assessment.financial.helper.RequestValidatorHelper;
 import com.assessment.financial.service.TransactionService;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping(ApiPath.BASE_TRANSACTION_PATH)
+@Slf4j
 public class TransactionController {
 
   @Autowired
@@ -41,10 +44,13 @@ public class TransactionController {
                   .data(data)
                   .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException error) {
+      log.info("ASDASDASD");
       return Mono.just(
-          ResponseDto.buildResponse()
-              .responseCode(ResponseCode.FAILED_CREATE_DATA)
+          ResponseDto.buildResponseException()
+              .status_code(error.getCode())
+              .message(error.getMessage())
+              .data(null)
               .build()
       );
     }
@@ -70,11 +76,13 @@ public class TransactionController {
                 .build()
             );
       }
-    } catch (Exception e) {
+    } catch (BusinessLogicException error) {
       return Mono.just(ResponseDto
-          .buildResponse()
-          .responseCode(ResponseCode.FAILED_GET_DATA)
-          .build()
+          .buildResponseException()
+              .status_code(error.getCode())
+              .message(error.getMessage())
+              .data(null)
+              .build()
       );
     }
     return Mono.just(ResponseDto

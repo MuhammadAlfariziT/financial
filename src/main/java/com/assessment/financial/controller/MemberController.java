@@ -4,6 +4,7 @@ import com.assessment.financial.constant.ApiPath;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.MemberAndTransactionDto;
 import com.assessment.financial.dto.ResponseDto;
+import com.assessment.financial.exception.BusinessLogicException;
 import com.assessment.financial.helper.RequestValidatorHelper;
 import com.assessment.financial.service.MemberService;
 import java.util.Objects;
@@ -33,14 +34,14 @@ public class MemberController {
     }
 
     try {
-      return memberService.insertOneMember(memberAndTransactionDto)
+      return memberService.insertMember(memberAndTransactionDto)
           .map(
               data -> ResponseDto.buildResponse()
                   .responseCode(ResponseCode.SUCCESS_CREATE_DATA)
                   .data(data)
                   .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException e) {
       return Mono.just(
           ResponseDto.buildResponse()
               .responseCode(ResponseCode.FAILED_CREATE_DATA)
@@ -59,7 +60,7 @@ public class MemberController {
               .data(data)
               .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException e) {
       return Mono.just(
           ResponseDto.buildResponse()
               .responseCode(ResponseCode.FAILED_GET_DATA)
@@ -78,7 +79,7 @@ public class MemberController {
                   .data(memberDto)
                   .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException e) {
       return Mono.just(
           ResponseDto.buildResponse()
               .responseCode(ResponseCode.FAILED_GET_DATA)
@@ -94,14 +95,14 @@ public class MemberController {
     }
 
     try {
-      return memberService.updateOneMember(id, memberAndTransactionDto)
+      return memberService.updateMember(id, memberAndTransactionDto)
           .map(
               data -> ResponseDto.buildResponse()
                   .responseCode(ResponseCode.SUCCESS_UPDATE_DATA)
                   .data(data)
                   .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException e) {
       return Mono.just(
           ResponseDto.buildResponse()
               .responseCode(ResponseCode.FAILED_UPDATE_DATA)
@@ -113,13 +114,13 @@ public class MemberController {
   @DeleteMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> deleteOneMember (@PathVariable Long id) {
     try {
-      return memberService.deleteOneMember(id)
+      return memberService.deleteMember(id)
           .thenReturn(
               ResponseDto.buildResponse()
                   .responseCode(ResponseCode.SUCCESS_DELETE_DATA)
                   .build()
           );
-    } catch (Exception e) {
+    } catch (BusinessLogicException e) {
       return Mono.just(
           ResponseDto.buildResponse()
               .responseCode(ResponseCode.FAILED_DELETE_DATA)

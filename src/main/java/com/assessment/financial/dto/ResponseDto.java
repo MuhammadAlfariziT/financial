@@ -19,4 +19,11 @@ public class ResponseDto {
     this.message = responseCode.getMessage();
     this.data = data;
   }
+
+  @Builder(builderMethodName = "buildResponseException")
+  public ResponseDto (int status_code, String message, Object data) {
+    this.status_code = status_code;
+    this.message = message;
+    this.data = data;
+  }
 }
