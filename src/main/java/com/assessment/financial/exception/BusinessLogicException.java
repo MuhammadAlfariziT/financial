@@ -1,7 +1,11 @@
 package com.assessment.financial.exception;
 
 import com.assessment.financial.constant.response.ResponseCode;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class BusinessLogicException extends RuntimeException{
   private static final long serialVersionUID = 1L;
 
