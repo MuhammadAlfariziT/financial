@@ -8,4 +8,8 @@ Terkait struktur database, dapat dilihat pada postgre-structure.png
 ## Documentation
 Terkait dokumentasi API, terdapat pada file postman.zip
 
-
+## Istilah yang Digunakan Untuk transaction_type
+- Withdraw : Penarikan, balance dari member yang bersangkutan akan DITAMBAHKAN sebanyak amount yang diinput
+- Deposit : Penyetoran, balance dari member yang bersangkutan akan DIKURANGKAN sebanyak amount yang diinput
+- Loan : Peminjaman, balance dari member yang bersangkutan akan DITAMBAHKAN sebanyak amount yang diinput
+- Paid Off : Pelunasan hutang, balance dari member yang bersangkutan akan DIKURANGKAN sebanyak amount yang diinput
