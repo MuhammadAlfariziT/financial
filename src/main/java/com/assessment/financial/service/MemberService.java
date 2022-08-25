@@ -27,7 +27,11 @@ public class MemberService {
     return Mono.just(memberAndTransactionDto)
         .map(memberAndTransactionDtoEntity -> {
             MemberDao memberDao = MemberMapper.memberAndTransactionDtoToDao(memberAndTransactionDtoEntity);
-            memberRepository.save(memberDao);
+            if (memberAndTransactionDto.getBalance() < 0){
+              throw new BusinessLogicException(ResponseCode.SUFFICIENT_BALANCE);
+            }
+
+          memberRepository.save(memberDao);
             return MemberMapper.memberDaoToDto(memberDao);
         })
         .doOnError(throwable -> {
@@ -61,7 +65,7 @@ public class MemberService {
           .flatMap(memberDaoOptional -> Optional.ofNullable(memberDaoOptional)
               .map(memberDao -> {
 
-                if (memberDao.getBalance() < 0){
+                if (memberAndTransactionDto.getBalance() < 0){
                   throw new BusinessLogicException(ResponseCode.SUFFICIENT_BALANCE);
                 }
 

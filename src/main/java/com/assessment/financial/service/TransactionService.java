@@ -1,10 +1,12 @@
 package com.assessment.financial.service;
 
+import com.assessment.financial.constant.TransactionType;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dao.TransactionDao;
 import com.assessment.financial.dto.TransactionDto;
 import com.assessment.financial.dto.TransactionHistoryDto;
 import com.assessment.financial.exception.BusinessLogicException;
+import com.assessment.financial.mapper.MemberMapper;
 import com.assessment.financial.mapper.TransactionMapper;
 import com.assessment.financial.repository.MemberRepository;
 import com.assessment.financial.repository.TransactionRepository;
@@ -27,9 +29,29 @@ public class TransactionService {
   @Autowired
   private MemberRepository memberRepository;
 
+  @Autowired
+  private MemberService memberService;
+
   public Mono<TransactionDto> insertOneTransaction (TransactionDto transactionDto) {
     return Mono.just(transactionDto)
         .map(transactionDtoEntity -> {
+          log.info("Sampai sini");
+          memberRepository.findById(transactionDto.getMember_id())
+              .flatMap(memberDaoOptional -> Optional.ofNullable(memberDaoOptional)
+                  .map(memberDao -> {
+                    Long future_balance = memberDao.getBalance();
+
+                    if (transactionDto.getTransaction_type().equals(TransactionType.PAID_OFF) || transactionDto.getTransaction_type().equals(TransactionType.DEPOSIT)) {
+                      future_balance -= transactionDto.getAmount();
+                    } else {
+                      future_balance += transactionDto.getAmount();
+                    }
+
+                    memberDao.setBalance(future_balance);
+
+                    return memberService.updateOneMember(transactionDto.getMember_id(), MemberMapper.memberDaoToMemberAndTransactionDto(memberDao));
+                  })
+              );
           TransactionDao transactionDao = TransactionMapper.transactionDtoToDao(transactionDtoEntity);
           transactionRepository.save(transactionDao);
           return TransactionMapper.transactionDaoToDto(transactionDao);
