@@ -1,19 +1,23 @@
 package com.assessment.financial.service;
 
+import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.TransactionDto;
 import com.assessment.financial.dto.TransactionHistoryDto;
+import com.assessment.financial.exception.BusinessLogicException;
 import com.assessment.financial.mapper.TransactionMapper;
 import com.assessment.financial.repository.MemberRepository;
 import com.assessment.financial.repository.TransactionRepository;
 import java.sql.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@Slf4j
 public class TransactionService {
 
   @Autowired
@@ -26,7 +30,11 @@ public class TransactionService {
     return Mono.just(transactionDto)
         .map(TransactionMapper::transactionDtoToDao)
         .map(transactionRepository::save)
-        .map(TransactionMapper::transactionDaoToDto);
+        .map(TransactionMapper::transactionDaoToDto)
+        .doOnError(throwable -> {
+          log.error(throwable.toString());
+          throw new BusinessLogicException(ResponseCode.FAILED_CREATE_DATA);
+        });
   }
 
   public Flux<TransactionHistoryDto> getAllTransactionHistory () {
@@ -42,7 +50,11 @@ public class TransactionService {
                 .build()
             ).collect(Collectors.toList())
         )
-        .flatMap(Flux::fromIterable);
+        .flatMap(Flux::fromIterable)
+        .doOnError(throwable -> {
+          log.error(throwable.toString());
+          throw new BusinessLogicException(ResponseCode.FAILED_GET_DATA);
+        });
   }
 
   public Flux<TransactionHistoryDto> getTransactionHistoryRangeDate (String startDate, String endDate) {
@@ -64,27 +76,43 @@ public class TransactionService {
                 .build()
             ).collect(Collectors.toList())
         )
-        .flatMap(Flux::fromIterable);
+        .flatMap(Flux::fromIterable)
+        .doOnError(throwable -> {
+          log.error(throwable.toString());
+          throw new BusinessLogicException(ResponseCode.FAILED_GET_DATA);
+        });
 
   }
 
   public Mono<Optional<TransactionDto>> updateOneTransaction (Long id, TransactionDto transactionDto) {
-    return Mono.just(transactionRepository.findById(id)
-        .flatMap(transactionDaoOptional -> Optional.ofNullable(transactionDaoOptional)
-            .map(transactionDao -> {
-              transactionDao.setMember_id(transactionDto.getMember_id());
-              transactionDao.setTransaction_type(transactionDto.getTransaction_type());
-              transactionDao.setAmount(transactionDto.getAmount());
-              transactionDao.setTransaction_date(Date.valueOf(transactionDto.getTransaction_date()));
+    try {
+      return Mono.just(transactionRepository.findById(id)
+          .flatMap(transactionDaoOptional -> Optional.ofNullable(transactionDaoOptional)
+              .map(transactionDao -> {
+                transactionDao.setMember_id(transactionDto.getMember_id());
+                transactionDao.setTransaction_type(transactionDto.getTransaction_type());
+                transactionDao.setAmount(transactionDto.getAmount());
+                transactionDao.setTransaction_date(Date.valueOf(transactionDto.getTransaction_date()));
 
-              return transactionRepository.save(transactionDao);
-            })
-            .map(TransactionMapper::transactionDaoToDto)
-        ));
+                return transactionRepository.save(transactionDao);
+              })
+              .map(TransactionMapper::transactionDaoToDto)
+          )
+      ).doOnError(throwable -> {
+        log.error(throwable.toString());
+        throw new BusinessLogicException(ResponseCode.DATA_NOT_EXIST);
+      });
+    } catch (Exception e) {
+      throw new BusinessLogicException(ResponseCode.FAILED_UPDATE_DATA);
+    }
   }
 
   public Mono<Void> deleteOneTransaction (Long id) {
-    transactionRepository.deleteById(id);
-    return Mono.empty();
+    try {
+      transactionRepository.deleteById(id);
+      return Mono.empty();
+    } catch (Exception e) {
+      throw new BusinessLogicException(ResponseCode.FAILED_DELETE_DATA);
+    }
   }
 }

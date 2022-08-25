@@ -1,6 +1,7 @@
 package com.assessment.financial.controller;
 
 import com.assessment.financial.constant.ApiPath;
+import com.assessment.financial.constant.TransactionType;
 import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.dto.TransactionDto;
@@ -28,69 +29,126 @@ public class TransactionController {
 
   @PostMapping
   public Mono<ResponseDto> insertOneTransaction (@RequestBody TransactionDto transactionDto) {
-    return transactionService.insertOneTransaction(transactionDto)
-        .map(
-            data -> ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(data)
-                .build()
-        );
+    if (! transactionDto.getTransaction_type().equals(TransactionType.DEPOSIT) &&
+        ! transactionDto.getTransaction_type().equals(TransactionType.LOAN) &&
+        ! transactionDto.getTransaction_type().equals(TransactionType.PAID_OFF) &&
+        ! transactionDto.getTransaction_type().equals(TransactionType.WITHDRAW)) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.TRANSACTION_TYPE_NOT_RECOGIZED)
+              .build()
+      );
+    }
+
+    if (Objects.isNull(transactionDto.getTransaction_type()) ||
+        Objects.isNull(transactionDto.getTransaction_date()) ||
+        Objects.isNull(transactionDto.getAmount()) ||
+        Objects.isNull(transactionDto.getMember_id())) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.ALL_FIELD_REQUIRED)
+              .build()
+      );
+    }
+
+    try {
+      return transactionService.insertOneTransaction(transactionDto)
+          .map(
+              data -> ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_CREATE_DATA)
+                  .data(data)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_CREATE_DATA)
+              .build()
+      );
+    }
   }
 
   @GetMapping
   public Mono<ResponseDto> getAllTransaction (@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
-    if (!Objects.isNull(startDate) && !Objects.isNull(endDate)) {
-      return transactionService.getTransactionHistoryRangeDate(startDate, endDate)
-          .collectList()
-          .map(data -> ResponseDto.buildResponse()
-              .status_code(ResponseCode.SUCCESS.getCode())
-              .message(ResponseCode.SUCCESS.getMessage())
-              .data(data)
-              .build()
-          );
-    } else if (Objects.isNull(startDate) && Objects.isNull(endDate)){
-      return transactionService.getAllTransactionHistory()
-          .collectList()
-          .map(data -> ResponseDto.buildResponse()
-              .status_code(ResponseCode.SUCCESS.getCode())
-              .message(ResponseCode.SUCCESS.getMessage())
-              .data(data)
-              .build()
-          );
+    try {
+      if (!Objects.isNull(startDate) && !Objects.isNull(endDate)) {
+        return transactionService.getTransactionHistoryRangeDate(startDate, endDate)
+            .collectList()
+            .map(data -> ResponseDto.buildResponse()
+                .responseCode(ResponseCode.SUCCESS_GET_DATA)
+                .data(data)
+                .build()
+            );
+      } else if (Objects.isNull(startDate) && Objects.isNull(endDate)){
+        return transactionService.getAllTransactionHistory()
+            .collectList()
+            .map(data -> ResponseDto.buildResponse()
+                .responseCode(ResponseCode.SUCCESS_GET_DATA)
+                .data(data)
+                .build()
+            );
+      }
+    } catch (Exception e) {
+      return Mono.just(ResponseDto
+          .buildResponse()
+          .responseCode(ResponseCode.FAILED_GET_DATA)
+          .build()
+      );
     }
-
     return Mono.just(ResponseDto
         .buildResponse()
-            .status_code(ResponseCode.BAD_RESPONSE.getCode())
-            .message(ResponseCode.BAD_RESPONSE.getMessage())
-            .data(null)
+            .responseCode(ResponseCode.BAD_RESPONSE)
             .build()
         );
   }
 
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> updateOneTransaction (@RequestBody TransactionDto transactionDto, @PathVariable Long id) {
-    return transactionService.updateOneTransaction(id, transactionDto)
-        .map(
-            data -> ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(data)
-                .build()
-        );
+    if (
+        ! transactionDto.getTransaction_type().equals(TransactionType.DEPOSIT) &&
+            ! transactionDto.getTransaction_type().equals(TransactionType.LOAN) &&
+            ! transactionDto.getTransaction_type().equals(TransactionType.PAID_OFF) &&
+            ! transactionDto.getTransaction_type().equals(TransactionType.WITHDRAW)
+    ) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.TRANSACTION_TYPE_NOT_RECOGIZED)
+              .build()
+      );
+    }
+
+    try {
+      return transactionService.updateOneTransaction(id, transactionDto)
+          .map(
+              data -> ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_UPDATE_DATA)
+                  .data(data)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_UPDATE_DATA)
+              .build()
+      );
+    }
   }
 
   @DeleteMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> deleteOneTransaction (@PathVariable Long id) {
-    return transactionService.deleteOneTransaction(id)
-        .thenReturn(
-            ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(null)
-                .build()
-        );
+    try {
+      return transactionService.deleteOneTransaction(id)
+          .thenReturn(
+              ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_DELETE_DATA)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_DELETE_DATA)
+              .build()
+      );
+    }
   }
-
 }

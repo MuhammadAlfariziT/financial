@@ -5,6 +5,7 @@ import com.assessment.financial.constant.response.ResponseCode;
 import com.assessment.financial.dto.MemberAndTransactionDto;
 import com.assessment.financial.dto.ResponseDto;
 import com.assessment.financial.service.MemberService;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,61 +26,114 @@ public class MemberController {
 
   @PostMapping
   public Mono<ResponseDto> insertOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto) {
-    return memberService.insertOneMember(memberAndTransactionDto)
-        .map(
-            data -> ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(data)
-                .build()
-        );
+    if (memberAndTransactionDto.getName().length() <= 3) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.NAME_LEN_MIN_3_CHARACTER)
+              .build()
+      );
+    }
+
+    if (Objects.isNull(memberAndTransactionDto.getName()) ||
+        Objects.isNull(memberAndTransactionDto.getAddress()) ||
+        Objects.isNull(memberAndTransactionDto.getBalance()) ||
+        Objects.isNull(memberAndTransactionDto.getBirth_date())) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.ALL_FIELD_REQUIRED)
+              .build()
+      );
+    }
+
+    try {
+      return memberService.insertOneMember(memberAndTransactionDto)
+          .map(
+              data -> ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_CREATE_DATA)
+                  .data(data)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_CREATE_DATA)
+              .build()
+      );
+    }
   }
 
   @GetMapping
   public Mono<ResponseDto> getAllMember () {
-    return memberService.getAllMember()
-        .collectList()
-        .map(data -> ResponseDto.buildResponse()
-              .status_code(ResponseCode.SUCCESS.getCode())
-              .message(ResponseCode.SUCCESS.getMessage())
+    try {
+      return memberService.getAllMember()
+          .collectList()
+          .map(data -> ResponseDto.buildResponse()
+              .responseCode(ResponseCode.SUCCESS_GET_DATA)
               .data(data)
               .build()
-        );
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_GET_DATA)
+              .build()
+      );
+    }
   }
 
   @GetMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> getMemberById (@PathVariable Long id) {
-    return memberService.getMemberById(id)
-        .map(
-            memberDto -> ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(memberDto)
-                .build()
-        );
+    try {
+      return memberService.getMemberById(id)
+          .map(
+              memberDto -> ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_GET_DATA)
+                  .data(memberDto)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_GET_DATA)
+              .build()
+      );
+    }
   }
 
   @PutMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> updateOneMember (@RequestBody MemberAndTransactionDto memberAndTransactionDto, @PathVariable Long id) {
-    return memberService.updateOneMember(id, memberAndTransactionDto)
-        .map(
-            data -> ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(data)
-                .build()
-        );
+    try {
+      return memberService.updateOneMember(id, memberAndTransactionDto)
+          .map(
+              data -> ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_UPDATE_DATA)
+                  .data(data)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_UPDATE_DATA)
+              .build()
+      );
+    }
   }
 
   @DeleteMapping(ApiPath.APPEND_PARAMS_ID)
   public Mono<ResponseDto> deleteOneMember (@PathVariable Long id) {
-    return memberService.deleteOneMember(id)
-        .thenReturn(
-            ResponseDto.buildResponse()
-                .status_code(ResponseCode.SUCCESS.getCode())
-                .message(ResponseCode.SUCCESS.getMessage())
-                .data(null)
-                .build()
-        );
+    try {
+      return memberService.deleteOneMember(id)
+          .thenReturn(
+              ResponseDto.buildResponse()
+                  .responseCode(ResponseCode.SUCCESS_DELETE_DATA)
+                  .build()
+          );
+    } catch (Exception e) {
+      return Mono.just(
+          ResponseDto.buildResponse()
+              .responseCode(ResponseCode.FAILED_DELETE_DATA)
+              .build()
+      );
+    }
   }
 }
